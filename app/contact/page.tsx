@@ -64,7 +64,9 @@ export default function ContactPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm text-stone-500 mb-1">Website Developer</p>
-                                            <p className="text-xl font-bold text-primary">Shomuran Services LLC</p>
+                                            <a href="https://shomuran.com" target="_blank" rel="noopener noreferrer" className="text-xl font-bold text-primary hover:text-primary/80 transition-colors">
+                                                Shomuran Services LLC
+                                            </a>
                                         </div>
                                     </div>
 

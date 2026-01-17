@@ -44,7 +44,7 @@ export function Footer() {
 
                 <div className="pt-6 border-t border-secondary/20 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground/60">
                     <p>© {new Date().getFullYear()} DevaSeva. All rights reserved.</p>
-                    <p>Developed by <span className="font-semibold text-primary/80">Shomuran Services LLC</span></p>
+                    <p>Developed by <a href="https://shomuran.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary/80 hover:text-primary transition-colors">Shomuran Services LLC</a></p>
                 </div>
             </div>
         </footer>
