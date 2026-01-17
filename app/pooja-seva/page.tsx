@@ -1,92 +1,246 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/app/components/ui/Button";
-import Link from "next/link";
-import { ArrowRight, Calendar, Heart, ShieldCheck } from "lucide-react";
+import { Loader2, Calendar as CalIcon, CheckCircle2, X } from "lucide-react";
 
-export default function PoojaSeva() {
+// Types
+type Seva = {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    img_url?: string;
+};
+
+export default function PoojaSevaPage() {
+    const [sevas, setSevas] = useState<Seva[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedSeva, setSelectedSeva] = useState<Seva | null>(null);
+
+    // Form State
+    const [bookingStatus, setBookingStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [formData, setFormData] = useState({
+        user_name: "",
+        user_phone: "",
+        user_email: "",
+        booking_date: "",
+        nakshatra: "",
+        gothra: "",
+        rashi: "",
+    });
+
+    // Fetch Sevas on load
+    useEffect(() => {
+        async function fetchSevas() {
+            try {
+                const { data, error } = await supabase.from('sevas').select('*').order('price');
+                if (error) throw error;
+                setSevas(data || []);
+            } catch (err) {
+                console.error("Error fetching sevas:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchSevas();
+    }, []);
+
+    const handleBookClick = (seva: Seva) => {
+        setSelectedSeva(seva);
+        setBookingStatus('idle');
+    };
+
+    const closeModal = () => {
+        setSelectedSeva(null);
+        setBookingStatus('idle');
+        setFormData({ user_name: "", user_phone: "", user_email: "", booking_date: "", nakshatra: "", gothra: "", rashi: "" });
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedSeva) return;
+        setBookingStatus('submitting');
+
+        try {
+            const { error } = await supabase.from('bookings').insert([
+                {
+                    seva_id: selectedSeva.id,
+                    ...formData,
+                    status: 'pending' // Payment integration pending
+                }
+            ]);
+
+            if (error) throw error;
+            setBookingStatus('success');
+        } catch (err) {
+            console.error(err);
+            setBookingStatus('error');
+        }
+    };
+
     return (
-        <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-            {/* Hero Section */}
-            <section className="relative flex-1 flex flex-col justify-center items-center text-center p-8 overflow-hidden">
-                <div className="absolute inset-0 z-0 bg-gradient-to-b from-primary/10 to-transparent" />
-                <div className="absolute inset-0 z-0 bg-[url('/pattern-bg.svg')] opacity-10" />
-
-                <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/20 text-secondary-foreground text-sm font-medium animate-fade-in-up">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
-                        </span>
-                        Experience the Divine
-                    </div>
-
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-primary drop-shadow-sm">
-                        Book Poojas & Sevas <br />
-                        <span className="text-secondary-foreground">From Anywhere</span>
-                    </h1>
-
-                    <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
-                        Connect with divinity through our seamless online booking platform. Perform rituals, offer donations, and seek blessings with ease.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <Button size="lg" className="text-lg px-8 shadow-lg shadow-primary/20" asChild>
-                            <Link href="/poojas">
-                                Book a Pooja
-                                <ArrowRight className="ml-2 size-5" />
-                            </Link>
-                        </Button>
-                        <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-                            <Link href="/donate">
-                                Make a Donation
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* Featured Section */}
-            <section className="py-20 bg-white">
+        <div className="min-h-screen bg-stone-50">
+            {/* Header */}
+            <section className="bg-primary py-16 text-white text-center">
                 <div className="container mx-auto px-4">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl font-bold text-primary mb-4">Why Choose DevaSeva?</h2>
-                        <p className="text-muted-foreground text-lg">
-                            We bring the temple to you. Trusted by thousands of devotees for authentic and hassle-free spiritual services.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<ShieldCheck className="size-10 text-primary" />}
-                            title="Verified Priests"
-                            description="All rituals are performed by experienced and verified Vedic priests."
-                        />
-                        <FeatureCard
-                            icon={<Calendar className="size-10 text-primary" />}
-                            title="Easy Scheduling"
-                            description="Book rituals at your convenience with our flexible calendar integration."
-                        />
-                        <FeatureCard
-                            icon={<Heart className="size-10 text-primary" />}
-                            title="Transparent Donations"
-                            description="100% of your donations reach the temple trust with complete transparency."
-                        />
-                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">Pooja & Sevas</h1>
+                    <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                        Perform sacred rituals and seek divine blessings.
+                    </p>
                 </div>
             </section>
+
+            {/* Main Content */}
+            <div className="container mx-auto px-4 py-12">
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="size-10 animate-spin text-primary" />
+                    </div>
+                ) : sevas.length === 0 ? (
+                    <div className="text-center py-20 text-stone-500">
+                        <p>No Sevas found. Please check database connection.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {sevas.map((seva) => (
+                            <div key={seva.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                                <div className="h-48 bg-primary/10 flex items-center justify-center">
+                                    {/* Placeholder for image if one exists, else icon */}
+                                    {seva.img_url ? (
+                                        <img src={seva.img_url} alt={seva.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <CalIcon className="size-16 text-primary/30" />
+                                    )}
+                                </div>
+                                <div className="p-6 flex-1 flex flex-col">
+                                    <h3 className="text-xl font-bold text-stone-800 mb-2 font-serif">{seva.title}</h3>
+                                    <p className="text-stone-600 text-sm mb-4 flex-1">{seva.description}</p>
+                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-100">
+                                        <span className="text-lg font-bold text-primary">₹ {seva.price}</span>
+                                        <Button onClick={() => handleBookClick(seva)}>Book Now</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Booking Modal */}
+            {selectedSeva && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                            <h3 className="text-xl font-bold text-stone-800 font-serif">Book {selectedSeva.title}</h3>
+                            <button onClick={closeModal} className="text-stone-400 hover:text-stone-800">
+                                <X className="size-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            {bookingStatus === 'success' ? (
+                                <div className="text-center py-10">
+                                    <div className="bg-green-100 p-4 rounded-full text-green-600 inline-block mb-4">
+                                        <CheckCircle2 className="size-12" />
+                                    </div>
+                                    <h4 className="text-2xl font-bold text-stone-800 mb-2">Booking Confirmed!</h4>
+                                    <p className="text-stone-600 mb-6">
+                                        We have received your request for {selectedSeva.title}. <br />
+                                        Our team will contact you shortly for payment.
+                                    </p>
+                                    <Button onClick={closeModal} className="w-full">Close</Button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div className="bg-primary/5 p-4 rounded-xl mb-6">
+                                        <p className="text-sm text-stone-600">Seva Amount</p>
+                                        <p className="text-2xl font-bold text-primary">₹ {selectedSeva.price}</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-stone-500 uppercase">Date</label>
+                                                <input
+                                                    required
+                                                    type="date"
+                                                    name="booking_date"
+                                                    value={formData.booking_date}
+                                                    onChange={handleChange}
+                                                    className="w-full p-2.5 rounded-lg border border-stone-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-stone-500 uppercase">Phone</label>
+                                                <input
+                                                    required
+                                                    type="tel"
+                                                    name="user_phone"
+                                                    value={formData.user_phone}
+                                                    onChange={handleChange}
+                                                    placeholder="9876543210"
+                                                    className="w-full p-2.5 rounded-lg border border-stone-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-stone-500 uppercase">Devotee Name</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                name="user_name"
+                                                value={formData.user_name}
+                                                onChange={handleChange}
+                                                className="w-full p-2.5 rounded-lg border border-stone-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-stone-500 uppercase">Nakshatra</label>
+                                                <input
+                                                    type="text"
+                                                    name="nakshatra"
+                                                    value={formData.nakshatra}
+                                                    onChange={handleChange}
+                                                    placeholder="Optional"
+                                                    className="w-full p-2.5 rounded-lg border border-stone-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-stone-500 uppercase">Gothra</label>
+                                                <input
+                                                    type="text"
+                                                    name="gothra"
+                                                    value={formData.gothra}
+                                                    onChange={handleChange}
+                                                    placeholder="Optional"
+                                                    className="w-full p-2.5 rounded-lg border border-stone-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={bookingStatus === 'submitting'}>
+                                        {bookingStatus === 'submitting' ? (
+                                            <>
+                                                <Loader2 className="mr-2 size-4 animate-spin" /> Confirming...
+                                            </>
+                                        ) : "Confirm Booking"}
+                                    </Button>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
-}
-
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
-    return (
-        <div className="p-8 rounded-2xl bg-accent/30 border border-secondary/20 hover:border-secondary/50 transition-colors text-center group">
-            <div className="mb-6 inline-flex p-4 rounded-full bg-white shadow-sm ring-1 ring-secondary/10 group-hover:scale-110 transition-transform duration-300">
-                {icon}
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">{title}</h3>
-            <p className="text-muted-foreground leading-relaxed">
-                {description}
-            </p>
-        </div>
-    )
 }
