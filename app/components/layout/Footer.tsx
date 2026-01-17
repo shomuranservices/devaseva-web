@@ -42,8 +42,9 @@ export function Footer() {
                     </div>
                 </div>
 
-                <div className="pt-6 border-t border-secondary/20 text-center text-sm text-foreground/60">
-                    © {new Date().getFullYear()} DevaSeva. All rights reserved.
+                <div className="pt-6 border-t border-secondary/20 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground/60">
+                    <p>© {new Date().getFullYear()} DevaSeva. All rights reserved.</p>
+                    <p>Developed by <span className="font-semibold text-primary/80">Shomuran Services LLC</span></p>
                 </div>
             </div>
         </footer>
