@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/app/components/ui/Button";
-import { Input } from "@/app/components/ui/Input"; // Assuming we have or will use standard input styling, I'll inline styles if Input component doesn't exist yet. 
-// Wait, I haven't seen an Input component. I'll use standard HTML input with Tailwind classes to be safe, or check components.
-// I'll stick to raw Tailwind for inputs to avoid dependencies on unverified components.
+
 import { Heart, Loader2, IndianRupee, ShieldCheck } from "lucide-react";
 
 export default function DonatePage() {
@@ -98,8 +96,8 @@ export default function DonatePage() {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, purpose: p })}
                                         className={`p-3 rounded-xl border text-sm font-medium transition-all duration-200 ${formData.purpose === p
-                                                ? "bg-primary text-white border-primary shadow-md transform scale-105"
-                                                : "bg-white text-stone-600 border-stone-200 hover:border-primary/50 hover:bg-stone-50"
+                                            ? "bg-primary text-white border-primary shadow-md transform scale-105"
+                                            : "bg-white text-stone-600 border-stone-200 hover:border-primary/50 hover:bg-stone-50"
                                             }`}
                                     >
                                         {p}
