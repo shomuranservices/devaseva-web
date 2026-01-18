@@ -12,7 +12,7 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-4 text-white">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight drop-shadow-lg font-serif">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight drop-shadow-lg font-serif break-words hyphens-auto px-4">
             Sri Jaladurgaparameshwari Temple
           </h1>
           <div className="flex justify-center">
