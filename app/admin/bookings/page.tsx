@@ -11,6 +11,8 @@ type Booking = {
     user_phone: string;
     booking_date: string;
     status: string;
+    nakshatra?: string;
+    gothra?: string;
     sevas: { title: string; price: number };
 };
 
@@ -111,6 +113,12 @@ export default function BookingsPage() {
                                     <td className="px-6 py-4">
                                         <div className="text-stone-900 font-medium">{booking.user_name}</div>
                                         <div className="text-sm text-stone-500">{booking.user_phone}</div>
+                                        {(booking.nakshatra || booking.gothra) && (
+                                            <div className="text-xs text-stone-500 mt-1 flex flex-wrap gap-x-2">
+                                                {booking.nakshatra && <span className="bg-stone-100 px-1.5 py-0.5 rounded text-stone-600">★ {booking.nakshatra}</span>}
+                                                {booking.gothra && <span className="text-stone-400 italic">Gotra: {booking.gothra}</span>}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-stone-900">{booking.sevas?.title || 'Unknown'}</div>
