@@ -15,9 +15,9 @@ export function Footer() {
                     <div>
                         <h4 className="font-semibold mb-4 text-purple-900">Quick Links</h4>
                         <ul className="space-y-2 text-sm">
-                            <li><Link href="/poojas" className="hover:text-primary">Book Pooja</Link></li>
-                            <li><Link href="/sevas" className="hover:text-primary">Sevas</Link></li>
-                            <li><Link href="/events" className="hover:text-primary">Events</Link></li>
+                            <li><Link href="/pooja-seva" className="hover:text-primary">Book Pooja</Link></li>
+                            <li><Link href="/pooja-seva" className="hover:text-primary">Sevas</Link></li>
+                            <li><Link href="/calendar" className="hover:text-primary">Events</Link></li>
                             <li><Link href="/donate" className="hover:text-primary">Donate</Link></li>
                         </ul>
                     </div>
