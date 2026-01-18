@@ -8,6 +8,7 @@ import { Menu, User, LogOut } from "lucide-react";
 
 export function Header() {
     const [user, setUser] = useState<any>(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Check active session
@@ -84,11 +85,52 @@ export function Header() {
                     )}
 
                     {/* Mobile Menu Toggle */}
-                    <Button variant="ghost" size="icon" className="md:hidden">
-                        <Menu className="size-5" />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <LogOut className="size-5 rotate-180" /> : <Menu className="size-5" />}
                     </Button>
                 </div>
             </div>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-stone-200 shadow-xl p-4 flex flex-col gap-2 animate-in slide-in-from-top-4">
+                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        Home
+                    </Link>
+                    <Link href="/pooja-seva" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        Pooja & Sevas
+                    </Link>
+                    <Link href="/calendar" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        Calendar & Events
+                    </Link>
+                    <Link href="/donate" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        Online Donations
+                    </Link>
+                    <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        Gallery
+                    </Link>
+                    <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-stone-700">
+                        About Us
+                    </Link>
+                    <div className="h-px bg-stone-100 my-2" />
+                    {user ? (
+                        <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-primary flex items-center gap-2">
+                            <User className="size-4" />
+                            My Profile
+                        </Link>
+                    ) : (
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="p-3 hover:bg-stone-50 rounded-lg text-sm font-medium text-primary flex items-center gap-2">
+                            <User className="size-4" />
+                            Sign In
+                        </Link>
+                    )}
+                </div>
+            )}
         </header>
     );
 }
