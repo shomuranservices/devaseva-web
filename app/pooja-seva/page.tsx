@@ -68,11 +68,16 @@ export default function PoojaSevaPage() {
         setBookingStatus('submitting');
 
         try {
+            // Get current user if logged in
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+
             const { error } = await supabase.from('bookings').insert([
                 {
                     seva_id: selectedSeva.id,
                     ...formData,
-                    status: 'pending' // Payment integration pending
+                    status: 'pending', // Payment integration pending
+                    user_id: user?.id || null
                 }
             ]);
 

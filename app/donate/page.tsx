@@ -26,6 +26,10 @@ export default function DonatePage() {
         setLoading(true);
 
         try {
+            // Get current user if logged in
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+
             const { error } = await supabase.from("donations").insert([
                 {
                     donor_name: formData.name,
@@ -34,6 +38,7 @@ export default function DonatePage() {
                     amount: parseFloat(formData.amount),
                     purpose: formData.purpose,
                     status: "pending", // Pending until payment integration
+                    user_id: user?.id || null
                 },
             ]);
 
