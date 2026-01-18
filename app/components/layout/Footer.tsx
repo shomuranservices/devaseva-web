@@ -19,7 +19,7 @@ export function Footer() {
                             <li><Link href="/gallery" className="hover:text-primary">Gallery</Link></li>
                             <li><Link href="/pooja-seva" className="hover:text-primary">Book Pooja</Link></li>
                             <li><Link href="/pooja-seva" className="hover:text-primary">Sevas</Link></li>
-                            <li><Link href="/calendar" className="hover:text-primary">Events</Link></li>
+                            <li><Link href="/calendar" className="hover:text-primary">Calendar & Events</Link></li>
                             <li><Link href="/donate" className="hover:text-primary">Donate</Link></li>
                         </ul>
                     </div>
