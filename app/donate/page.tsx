@@ -3,8 +3,14 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/app/components/ui/Button";
-
+import Script from "next/script";
 import { Heart, Loader2, IndianRupee, ShieldCheck } from "lucide-react";
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 export default function DonatePage() {
     const [loading, setLoading] = useState(false);
@@ -21,6 +27,73 @@ export default function DonatePage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handlePayment = async (orderId: string, amount: number, donationId: number) => {
+        const options = {
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            amount: amount * 100,
+            currency: "INR",
+            name: "DevaSeva",
+            description: "Donation for " + formData.purpose,
+            order_id: orderId,
+            handler: async function (response: any) {
+                try {
+                    const verifyRes = await fetch("/api/razorpay/verify", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        }),
+                    });
+
+                    const verifyData = await verifyRes.json();
+
+                    if (verifyData.isAuthentic) {
+                        // Update donation status to success
+                        const { error: updateError } = await supabase
+                            .from("donations")
+                            .update({ status: "success", payment_id: response.razorpay_payment_id })
+                            .eq("id", donationId);
+
+                        if (updateError) {
+                            console.error("Error updating donation status:", updateError);
+                            // Even if update fails, payment was successful, so we show success
+                        }
+
+                        setSuccess(true);
+                        setFormData({ name: "", phone: "", email: "", amount: "", purpose: "General Fund" });
+                    } else {
+                        alert("Payment verification failed. Please contact support.");
+                    }
+                } catch (error) {
+                    console.error("Error verifying payment:", error);
+                    alert("Payment verification failed. Please contact support.");
+                } finally {
+                    setLoading(false);
+                }
+            },
+            prefill: {
+                name: formData.name,
+                email: formData.email,
+                contact: formData.phone,
+            },
+            theme: {
+                color: "#D97706", // Amber-600 to match theme
+            },
+            modal: {
+                ondismiss: function () {
+                    setLoading(false);
+                }
+            }
+        };
+
+        const rzp1 = new window.Razorpay(options);
+        rzp1.open();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -30,27 +103,49 @@ export default function DonatePage() {
             const { data: { session } } = await supabase.auth.getSession();
             const user = session?.user;
 
-            const { error } = await supabase.from("donations").insert([
-                {
-                    donor_name: formData.name,
-                    donor_phone: formData.phone,
-                    donor_email: formData.email,
-                    amount: parseFloat(formData.amount),
-                    purpose: formData.purpose,
-                    status: "pending", // Pending until payment integration
-                    user_id: user?.id || null
+            // 1. Create Pending Donation
+            const { data: donationData, error: donationError } = await supabase
+                .from("donations")
+                .insert([
+                    {
+                        donor_name: formData.name,
+                        donor_phone: formData.phone,
+                        donor_email: formData.email,
+                        amount: parseFloat(formData.amount),
+                        purpose: formData.purpose,
+                        status: "pending",
+                        user_id: user?.id || null
+                    },
+                ])
+                .select()
+                .single();
+
+            if (donationError) throw donationError;
+
+            // 2. Create Razorpay Order
+            const orderRes = await fetch("/api/razorpay/order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-            ]);
+                body: JSON.stringify({
+                    amount: parseFloat(formData.amount),
+                    currency: "INR",
+                }),
+            });
 
-            if (error) throw error;
+            const orderData = await orderRes.json();
 
-            setSuccess(true);
-            // Reset form after success
-            setFormData({ name: "", phone: "", email: "", amount: "", purpose: "General Fund" });
+            if (orderData.error) {
+                throw new Error("Error creating Razorpay order");
+            }
+
+            // 3. Initiate Payment
+            await handlePayment(orderData.id, parseFloat(formData.amount), donationData.id);
+
         } catch (error) {
-            console.error("Error submitting donation:", error);
+            console.error("Error initiating donation:", error);
             alert("Something went wrong. Please try again.");
-        } finally {
             setLoading(false);
         }
     };
@@ -61,10 +156,10 @@ export default function DonatePage() {
                 <div className="bg-green-100 p-6 rounded-full text-green-600 mb-6 animate-in zoom-in duration-500">
                     <Heart className="size-12 fill-current" />
                 </div>
-                <h2 className="text-4xl font-bold text-stone-800 font-serif mb-4">Thank You!</h2>
+                <h2 className="text-4xl font-bold text-stone-800 font-serif mb-4">Dhanyavad!</h2>
                 <p className="text-xl text-stone-600 max-w-lg mb-8">
-                    Your details for the donation have been recorded. <br />
-                    (Payment Gateway integration is coming soon).
+                    Your contribution has been successfully received. <br />
+                    May the blessings of the Divine be with you.
                 </p>
                 <Button onClick={() => setSuccess(false)} size="lg">
                     Make Another Donation
@@ -75,6 +170,10 @@ export default function DonatePage() {
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-stone-50">
+            <Script
+                id="razorpay-checkout-js"
+                src="https://checkout.razorpay.com/v1/checkout.js"
+            />
             <section className="bg-primary py-16 text-white text-center">
                 <div className="container mx-auto px-4">
                     <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4">Make a Contribution</h1>
@@ -186,7 +285,7 @@ export default function DonatePage() {
                         </Button>
 
                         <p className="text-center text-xs text-stone-400 pt-4">
-                            Secure payments powered by Razorpay (Coming Soon).
+                            Secure payments powered by Razorpay.
                         </p>
                     </form>
                 </div>
