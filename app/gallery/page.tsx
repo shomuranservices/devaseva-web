@@ -31,6 +31,9 @@ const galleryItems: GalleryItem[] = [
     { type: 'video', src: "https://img.youtube.com/vi/y7wxL_EMjQg/maxresdefault.jpg", alt: "History Video 3", category: "History Video", videoId: "y7wxL_EMjQg" },
     { type: 'video', src: "https://img.youtube.com/vi/GAlgsq2nuaw/maxresdefault.jpg", alt: "History Video 4", category: "History Video", videoId: "GAlgsq2nuaw" },
     { type: 'video', src: "https://img.youtube.com/vi/kj8xa3PETV4/maxresdefault.jpg", alt: "History Video 5", category: "History Video", videoId: "kj8xa3PETV4" },
+    { type: 'video', src: "https://img.youtube.com/vi/3zz5a6hmbig/maxresdefault.jpg", alt: "History Video 6", category: "History Video", videoId: "3zz5a6hmbig" },
+    { type: 'video', src: "https://img.youtube.com/vi/IhC6sTgtZCs/maxresdefault.jpg", alt: "History Video 7", category: "History Video", videoId: "IhC6sTgtZCs" },
+    { type: 'video', src: "https://img.youtube.com/vi/H47li4jhiHE/maxresdefault.jpg", alt: "History Video 8", category: "History Video", videoId: "H47li4jhiHE" },
 ];
 
 export default function GalleryPage() {
