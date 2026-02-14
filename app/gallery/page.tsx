@@ -34,6 +34,15 @@ const galleryItems: GalleryItem[] = [
     { type: 'video', src: "https://img.youtube.com/vi/3zz5a6hmbig/maxresdefault.jpg", alt: "History Video 6", category: "History Video", videoId: "3zz5a6hmbig" },
     { type: 'video', src: "https://img.youtube.com/vi/IhC6sTgtZCs/maxresdefault.jpg", alt: "History Video 7", category: "History Video", videoId: "IhC6sTgtZCs" },
     { type: 'video', src: "https://img.youtube.com/vi/H47li4jhiHE/maxresdefault.jpg", alt: "History Video 8", category: "History Video", videoId: "H47li4jhiHE" },
+    { type: 'video', src: "https://img.youtube.com/vi/OnFtqZFBqss/maxresdefault.jpg", alt: "History Video 9", category: "History Video", videoId: "OnFtqZFBqss" },
+    { type: 'video', src: "https://img.youtube.com/vi/DDlwHtq0WE8/maxresdefault.jpg", alt: "History Video 10", category: "History Video", videoId: "DDlwHtq0WE8" },
+    { type: 'video', src: "https://img.youtube.com/vi/U7E7S5PkrHU/maxresdefault.jpg", alt: "History Video 11", category: "History Video", videoId: "U7E7S5PkrHU" },
+    { type: 'video', src: "https://img.youtube.com/vi/JkV4O9-QuVU/maxresdefault.jpg", alt: "History Video 12", category: "History Video", videoId: "JkV4O9-QuVU" },
+    { type: 'video', src: "https://img.youtube.com/vi/_X3mFJUHdfU/maxresdefault.jpg", alt: "History Video 13", category: "History Video", videoId: "_X3mFJUHdfU" },
+    { type: 'video', src: "https://img.youtube.com/vi/BzQJrW0dCqQ/maxresdefault.jpg", alt: "History Video 14", category: "History Video", videoId: "BzQJrW0dCqQ" },
+    { type: 'video', src: "https://img.youtube.com/vi/Kul8sm0AXIg/maxresdefault.jpg", alt: "History Video 15", category: "History Video", videoId: "Kul8sm0AXIg" },
+    { type: 'video', src: "https://img.youtube.com/vi/k7dCQZHRUZM/maxresdefault.jpg", alt: "History Video 16", category: "History Video", videoId: "k7dCQZHRUZM" },
+    { type: 'video', src: "https://img.youtube.com/vi/cNncbiYcLjs/maxresdefault.jpg", alt: "History Video 17", category: "History Video", videoId: "cNncbiYcLjs" },
 ];
 
 export default function GalleryPage() {
