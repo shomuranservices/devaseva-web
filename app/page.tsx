@@ -136,7 +136,11 @@ export default function Home() {
                   <p>Anekallu, Padpu, Post Kudthalthadka</p>
                   <p>Karopadi Village, Bantwal Taluk</p>
                   <p>Dakshina kannada, 574 279</p>
-                  <Button variant="link" className="p-0 h-auto text-primary">Get Directions &rarr;</Button>
+                  <Button variant="link" className="p-0 h-auto text-primary" asChild>
+                    <Link href="https://www.google.com/maps/place/Shri+Jaladurgaparameshwari+Temple,+Padpu/@12.7564264,74.994106,17z/data=!3m1!4b1!4m9!1m2!2m1!1sQX4X%2BGJV,+Road,+Malar,+Anekallu,+Karnataka+574279,+India!3m5!1s0x3ba4a10057fd36b1:0x8d57328ee62f2aef!8m2!3d12.7564212!4d74.9989769!16s%2Fg%2F11xzfmqj_l?entry=ttu" target="_blank" rel="noopener noreferrer">
+                      Get Directions &rarr;
+                    </Link>
+                  </Button>
                 </div>
               }
             />
