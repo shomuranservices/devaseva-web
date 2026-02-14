@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/app/components/ui/Button";
+import Script from "next/script";
 import { Loader2, Calendar as CalIcon, CheckCircle2, X } from "lucide-react";
 
 // Types
@@ -13,6 +14,12 @@ type Seva = {
     price: number;
     img_url?: string;
 };
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 export default function PoojaSevaPage() {
     const [sevas, setSevas] = useState<Seva[]>([]);
@@ -62,6 +69,71 @@ export default function PoojaSevaPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handlePayment = async (orderId: string, amount: number, bookingId: number) => {
+        const options = {
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            amount: amount * 100,
+            currency: "INR",
+            name: "DevaSeva",
+            description: "Booking for " + selectedSeva?.title,
+            order_id: orderId,
+            handler: async function (response: any) {
+                try {
+                    const verifyRes = await fetch("/api/razorpay/verify", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        }),
+                    });
+
+                    const verifyData = await verifyRes.json();
+
+                    if (verifyData.isAuthentic) {
+                        // Update booking status to success (or booked)
+                        const { error: updateError } = await supabase
+                            .from("bookings")
+                            .update({ status: "booked", payment_id: response.razorpay_payment_id })
+                            .eq("id", bookingId);
+
+                        if (updateError) {
+                            console.error("Error updating booking status:", updateError);
+                        }
+
+                        setBookingStatus('success');
+                    } else {
+                        alert("Payment verification failed. Please contact support.");
+                        setBookingStatus('error');
+                    }
+                } catch (error) {
+                    console.error("Error verifying payment:", error);
+                    alert("Payment verification failed. Please contact support.");
+                    setBookingStatus('error');
+                }
+            },
+            prefill: {
+                name: formData.user_name,
+                email: formData.user_email,
+                contact: formData.user_phone,
+            },
+            theme: {
+                color: "#D97706",
+            },
+            modal: {
+                ondismiss: function () {
+                    setBookingStatus('idle');
+                }
+            }
+        };
+
+        const rzp1 = new window.Razorpay(options);
+        rzp1.open();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedSeva) return;
@@ -72,25 +144,56 @@ export default function PoojaSevaPage() {
             const { data: { session } } = await supabase.auth.getSession();
             const user = session?.user;
 
-            const { error } = await supabase.from('bookings').insert([
-                {
-                    seva_id: selectedSeva.id,
-                    ...formData,
-                    status: 'pending', // Payment integration pending
-                    user_id: user?.id || null
-                }
-            ]);
+            // 1. Create Pending Booking
+            const { data: bookingData, error: bookingError } = await supabase
+                .from('bookings')
+                .insert([
+                    {
+                        seva_id: selectedSeva.id,
+                        ...formData,
+                        status: 'pending',
+                        user_id: user?.id || null
+                    }
+                ])
+                .select()
+                .single();
 
-            if (error) throw error;
-            setBookingStatus('success');
+            if (bookingError) throw bookingError;
+
+            // 2. Create Razorpay Order
+            const orderRes = await fetch("/api/razorpay/order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    amount: selectedSeva.price,
+                    currency: "INR",
+                }),
+            });
+
+            const orderData = await orderRes.json();
+
+            if (orderData.error) {
+                throw new Error("Error creating Razorpay order");
+            }
+
+            // 3. Initiate Payment
+            await handlePayment(orderData.id, selectedSeva.price, bookingData.id);
+
         } catch (err) {
-            console.error(err);
+            console.error("Error initiating booking:", err);
             setBookingStatus('error');
+            alert("Something went wrong. Please try again.");
         }
     };
 
     return (
         <div className="min-h-screen bg-stone-50">
+            <Script
+                id="razorpay-checkout-js"
+                src="https://checkout.razorpay.com/v1/checkout.js"
+            />
             {/* Header */}
             <section className="bg-primary py-16 text-white text-center">
                 <div className="container mx-auto px-4">
@@ -156,8 +259,8 @@ export default function PoojaSevaPage() {
                                     </div>
                                     <h4 className="text-2xl font-bold text-stone-800 mb-2">Booking Confirmed!</h4>
                                     <p className="text-stone-600 mb-6">
-                                        We have received your request for {selectedSeva.title}. <br />
-                                        Our team will contact you shortly for payment.
+                                        We have received your payment for {selectedSeva.title}. <br />
+                                        May the blessings of the Divine be with you.
                                     </p>
                                     <Button onClick={closeModal} className="w-full">Close</Button>
                                 </div>
@@ -236,10 +339,13 @@ export default function PoojaSevaPage() {
                                     <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={bookingStatus === 'submitting'}>
                                         {bookingStatus === 'submitting' ? (
                                             <>
-                                                <Loader2 className="mr-2 size-4 animate-spin" /> Confirming...
+                                                <Loader2 className="mr-2 size-4 animate-spin" /> Processing Payment...
                                             </>
-                                        ) : "Confirm Booking"}
+                                        ) : "Pay & Confirm Booking"}
                                     </Button>
+                                    <p className="text-center text-xs text-stone-400 pt-2">
+                                        Secure payments powered by Razorpay.
+                                    </p>
                                 </form>
                             )}
                         </div>
